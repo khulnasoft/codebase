@@ -1,0 +1,4 @@
+| error|  cannot format /home/ricks/Development/personal/gh-actions/errorformat/fmts/testdata/resources/python/subfolder/syntax_error.py: Cannot parse: 1:3: jan~20
+/home/ricks/Development/personal/gh-actions/errorformat/fmts/testdata/resources/python/subfolder/syntax_error.py|1 col 3 error| cannot format: Cannot parse: jan~20
+/home/ricks/Development/personal/gh-actions/errorformat/fmts/testdata/resources/python/num_guess.py|| would reformat
+/home/ricks/Development/personal/gh-actions/errorformat/fmts/testdata/resources/python/subfolder/queen_problem.py|| would reformat

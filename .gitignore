@@ -1,0 +1,8 @@
+
+.nx/installation
+.nx/cache
+sarif-schema-*.json
+node_modules
+.drone.sec.yaml
+vendor/
+dist/
