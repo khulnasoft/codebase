@@ -1,4 +1,4 @@
-name: codebase
+name: reviewdog
 on:
   push:
     branches:
@@ -6,12 +6,12 @@ on:
   pull_request:
 
 jobs:
-  codebase-github-check:
+  reviewdog-github-check:
     permissions:
       checks: write
       contents: read
       pull-requests: write
-    name: codebase (github-check)
+    name: reviewdog (github-check)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,37 +23,37 @@ jobs:
       - name: Install linters
         run: go install golang.org/x/lint/golint@latest
 
-      - name: Setup codebase
-        # uses: codebase/action-setup@v1
+      - name: Setup reviewdog
+        # uses: reviewdog/action-setup@v1
         run: |
-          go install ./cmd/codebase
+          go install ./cmd/reviewdog
 
-      - name: Run codebase
+      - name: Run reviewdog
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          golint ./... | codebase -f=golint -name=golint-github-check -reporter=github-check -level=warning
+          golint ./... | reviewdog -f=golint -name=golint-github-check -reporter=github-check -level=warning
 
-      - name: Run codebase with sub-dir (github-check)
+      - name: Run reviewdog with sub-dir (github-check)
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd ./_testdata/ && golint ./... | codebase -f=golint -name=golint-check-subdir -reporter=github-check -level=info -filter-mode=nofilter
+          cd ./_testdata/ && golint ./... | reviewdog -f=golint -name=golint-check-subdir -reporter=github-check -level=info -filter-mode=nofilter
 
       - name: Custom rdjson test (github-check)
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cat ./_testdata/custom_rdjson.json | \
-            codebase -name="custom-rdjson" -f=rdjson -reporter=github-check -level=info
+            reviewdog -name="custom-rdjson" -f=rdjson -reporter=github-check -level=info
 
-  codebase-pr:
+  reviewdog-pr:
     permissions:
       checks: write
       contents: read
       pull-requests: write
     if: github.event_name == 'pull_request'
-    name: codebase on Pull Request
+    name: reviewdog on Pull Request
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -65,78 +65,78 @@ jobs:
       - name: Install linters
         run: go install golang.org/x/lint/golint@latest
 
-      - name: Setup codebase
-        # uses: codebase/action-setup@v1
+      - name: Setup reviewdog
+        # uses: reviewdog/action-setup@v1
         run: |
-          go install ./cmd/codebase
+          go install ./cmd/reviewdog
 
-      - name: Run codebase (github-pr-check)
+      - name: Run reviewdog (github-pr-check)
         continue-on-error: true
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          codebase -reporter=github-pr-check -runners=golint,govet -fail-on-error
+          reviewdog -reporter=github-pr-check -runners=golint,govet -fail-on-error
 
-      - name: Run codebase (github-pr-reviewe with tee)
+      - name: Run reviewdog (github-pr-reviewe with tee)
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Remove Go Problem Matchers [1] as it reports duplicate results with
-          # codebase.
+          # reviewdog.
           # [1]: https://github.com/actions/toolkit/blob/master/docs/commands.md#problem-matchers
           echo "::remove-matcher owner=go::"
-          golint ./... | codebase -f=golint -name=golint-pr-review -reporter=github-pr-reviewe -tee
+          golint ./... | reviewdog -f=golint -name=golint-pr-review -reporter=github-pr-reviewe -tee
 
-      - name: Run codebase with sub-dir (github-pr-reviewe)
+      - name: Run reviewdog with sub-dir (github-pr-reviewe)
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd ./_testdata/ && golint ./... | codebase -f=golint -name=golint-pr-review-subdir -reporter=github-pr-reviewe -tee
+          cd ./_testdata/ && golint ./... | reviewdog -f=golint -name=golint-pr-review-subdir -reporter=github-pr-reviewe -tee
 
-      - name: Run codebase with sub-dir (local+fail-on-error)
+      - name: Run reviewdog with sub-dir (local+fail-on-error)
         run: |
           echo 'var LocalTest = 14' >> ./_testdata/golint.go
-          cd ./_testdata/ && golint ./... | codebase -f=golint -diff="git diff" -fail-on-error || EXIT_CODE=$?
+          cd ./_testdata/ && golint ./... | reviewdog -f=golint -diff="git diff" -fail-on-error || EXIT_CODE=$?
           git reset --hard @
           test "${EXIT_CODE}" = 1
 
-      - name: Run codebase (github-pr-check with fail-on-error)
+      - name: Run reviewdog (github-pr-check with fail-on-error)
         continue-on-error: true
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd ./_testdata/ && golint ./... | codebase -f=golint -name=golint-pr-check-fail-on-error -reporter=github-pr-check -fail-on-error
+          cd ./_testdata/ && golint ./... | reviewdog -f=golint -name=golint-pr-check-fail-on-error -reporter=github-pr-check -fail-on-error
 
-      - name: Run codebase (github-pr-check with -filter-mode=file)
+      - name: Run reviewdog (github-pr-check with -filter-mode=file)
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          golint | codebase -f=golint -name=golint-pr-check-filter-mode-file -reporter=github-pr-check -filter-mode=file -level=warning
+          golint | reviewdog -f=golint -name=golint-pr-check-filter-mode-file -reporter=github-pr-check -filter-mode=file -level=warning
 
-      - name: Run codebase (github-pr-reviewe -filter-mode=nofilter)
+      - name: Run reviewdog (github-pr-reviewe -filter-mode=nofilter)
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd ./_testdata/ && golint ./... | codebase -f=golint -name=golint-pr-review-nofilter -reporter=github-pr-reviewe -filter-mode=nofilter -fail-on-error || EXIT_CODE=$?
+          cd ./_testdata/ && golint ./... | reviewdog -f=golint -name=golint-pr-review-nofilter -reporter=github-pr-reviewe -filter-mode=nofilter -fail-on-error || EXIT_CODE=$?
           test "${EXIT_CODE}" = 1
 
       - name: Unexpected failure (github-pr-reviewe)
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd ./_testdata/ && codebase -conf=codebase_error.yml \
+          cd ./_testdata/ && reviewdog -conf=reviewdog_error.yml \
             -reporter=github-pr-reviewe || EXIT_CODE=$?
           test "${EXIT_CODE}" = 1
       - name: Unexpected failure (github-check)
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd ./_testdata/ && codebase -conf=codebase_error.yml \
+          cd ./_testdata/ && reviewdog -conf=reviewdog_error.yml \
             -reporter=github-check || EXIT_CODE=$?
           test "${EXIT_CODE}" = 1
       - name: Unexpected failure (local)
         run: |
-          cd ./_testdata/ && codebase -conf=codebase_error.yml \
+          cd ./_testdata/ && reviewdog -conf=reviewdog_error.yml \
             -reporter=local -diff='git diff master' || EXIT_CODE=$?
           test "${EXIT_CODE}" = 1
       - name: Suggestion (rdjsonl)
@@ -144,21 +144,21 @@ jobs:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cat ./_testdata/suggestions.json | \
-            codebase -name="suggestion-test" -f=rdjsonl -reporter=github-pr-reviewe
+            reviewdog -name="suggestion-test" -f=rdjsonl -reporter=github-pr-reviewe
 
       - name: Custom rdjsonl test (github-pr-reviewe)
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cat ./_testdata/custom_rdjson.json | \
-            codebase -name="custom-rdjson" -f=rdjson -reporter=github-pr-reviewe
+            reviewdog -name="custom-rdjson" -f=rdjson -reporter=github-pr-reviewe
 
-      - name: gofmt -s with codebase
+      - name: gofmt -s with reviewdog
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gofmt -s -d . | \
-            codebase -name="gofmt" -f=diff -f.diff.strip=0 -reporter=github-pr-reviewe
+            reviewdog -name="gofmt" -f=diff -f.diff.strip=0 -reporter=github-pr-reviewe
 
   golangci-lint:
     permissions:
@@ -170,7 +170,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: codebase/action-golangci-lint@v2
+      - uses: reviewdog/action-golangci-lint@v2
         with:
           github_token: ${{ secrets.github_token }}
           golangci_lint_flags: "--enable-all --exclude-use-default=false -D wsl -D testpackage"
@@ -190,7 +190,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
-      - uses: codebase/action-staticcheck@v1
+      - uses: reviewdog/action-staticcheck@v1
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-reviewe
@@ -203,7 +203,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: codebase/action-misspell@v1
+      - uses: reviewdog/action-misspell@v1
         with:
           github_token: ${{ secrets.github_token }}
           locale: "US"
@@ -214,7 +214,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: codebase/action-languagetool@v1
+      - uses: reviewdog/action-languagetool@v1
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-check
@@ -229,7 +229,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: codebase/action-shellcheck@v1
+      - uses: reviewdog/action-shellcheck@v1
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-reviewe
@@ -239,7 +239,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: codebase/action-alex@v1
+      - uses: reviewdog/action-alex@v1
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-check
@@ -250,25 +250,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: codebase/action-setup@v1
+      - uses: reviewdog/action-setup@v1
       - run: npm install
       - name: textlint
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npx textlint -f checkstyle README.md | \
-            codebase -f=checkstyle -name="textlint" -reporter=github-check -level=info
+            reviewdog -f=checkstyle -name="textlint" -reporter=github-check -level=info
 
   sarif:
     name: runner / textlint sarif
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: codebase/action-setup@v1
+      - uses: reviewdog/action-setup@v1
       - run: npm install
       - name: textlint sarif
         env:
           CODEBASE_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npx textlint -f @microsoft/eslint-formatter-sarif README.md | \
-            codebase -f=sarif -name="textlint" -reporter=github-check -level=info
+            reviewdog -f=sarif -name="textlint" -reporter=github-check -level=info
