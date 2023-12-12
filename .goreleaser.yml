@@ -37,7 +37,7 @@ archives:
 
 brews:
   - repository:
-      owner: codebase
+      owner: khulnasoft
       name: homebrew-tap
     folder: Formula
     homepage: https://github.com/khulnasoft/codebase

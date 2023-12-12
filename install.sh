@@ -353,7 +353,7 @@ End of functions from https://github.com/client9/shlib
 EOF
 
 PROJECT_NAME="codebase"
-OWNER=codebase
+OWNER=khulnasoft
 REPO="codebase"
 BINARY=codebase
 FORMAT=tar.gz

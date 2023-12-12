@@ -7,7 +7,7 @@ before:
 
 release:
   github:
-    owner: codebase
+    owner: khulnasoft
     name: nightly
   # Do not set prerelease so that https://github.com/khulnasoft/nightly/releases/latest always points to the latest version.
   prerelease: false

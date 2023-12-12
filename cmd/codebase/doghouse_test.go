@@ -232,7 +232,7 @@ func TestPostResultSet_withReportURL(t *testing.T) {
 					Diagnostic: &rdf.Diagnostic{
 						Message: "name1: test 1",
 						Location: &rdf.Location{
-							Path: "cmd/khulnasoft/codebase.go",
+							Path: "cmd/codebase/codebase.go",
 							Range: &rdf.Range{
 								Start: &rdf.Position{Line: 14},
 							},
@@ -244,7 +244,7 @@ func TestPostResultSet_withReportURL(t *testing.T) {
 					Diagnostic: &rdf.Diagnostic{
 						Message: "name1: test 2",
 						Location: &rdf.Location{
-							Path: "cmd/khulnasoft/codebase.go",
+							Path: "cmd/codebase/codebase.go",
 						},
 					},
 				},
